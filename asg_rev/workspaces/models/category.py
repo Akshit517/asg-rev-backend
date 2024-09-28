@@ -13,3 +13,28 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+from users.models.user import User
+from users.models.role import Role
+
+class CategoryRole(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='category_role'
+    )
+    category = models.ForeignKey(
+        Category,  
+        on_delete=models.CASCADE,  
+        related_name='category_role'  
+    )
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name='category_role'
+    )
+    class Meta:
+        unique_together = ('user', 'category', 'role')  
+
+    def __str__(self):
+        return f"{self.user} - {self.role} in {self.category}"

@@ -23,3 +23,28 @@ class Workspace(models.Model):
 
     def __str__(self):
         return self.name
+
+from users.models.user import User
+from users.models.role import Role
+
+class WorkspaceRole(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='workspace_role'
+    )
+    workspace = models.ForeignKey(
+        Workspace,  
+        on_delete=models.CASCADE,  
+        related_name='workspace_role'  
+    )
+    role = models.ForeignKey(
+        Role,
+        on_delete=models.CASCADE,
+        related_name='workspace_role'
+    )
+    class Meta:
+        unique_together = ('user', 'workspace', 'role')  
+
+    def __str__(self):
+        return f"{self.user} - {self.role} in {self.workspace}"

@@ -13,7 +13,16 @@ class LoginView(APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
-        user = authenticate(email=email, password=password)
+        try:
+            user = User.objects.get(email=email)  
+            username = user.username  
+            user = authenticate(username=username, password=password)  
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Invalid credentials"}, 
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
         if user is not None:
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -24,7 +33,7 @@ class LoginView(APIView):
             return Response(
                 {"error": "Invalid credentials"}, 
                 status=status.HTTP_401_UNAUTHORIZED
-                )
+            )
 
 class RegisterView(CreateAPIView):
     model = User

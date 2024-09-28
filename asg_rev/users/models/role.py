@@ -5,7 +5,7 @@ class Role(models.Model):
     ROLE_LEVEL_CHOICES = (
         ('workspace', 'Workspace'),
         ('category', 'Category'),
-        ('sub_category', 'Sub-Category'),
+        ('channel', 'Channel'),
     )
     
     role_title = models.CharField(
@@ -15,6 +15,7 @@ class Role(models.Model):
     role_level = models.CharField(
         max_length=15,
         choices=ROLE_LEVEL_CHOICES,
+        default='channel'
     )
     permissions = models.ManyToManyField(Permission, blank=True)
     

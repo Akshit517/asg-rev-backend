@@ -28,6 +28,7 @@ CUSTOM_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'users',
+    'workspaces',
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + CUSTOM_APPS

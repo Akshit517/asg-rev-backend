@@ -1,42 +1,43 @@
-from users.serializers.user import UserSerializer
 from django.contrib.auth import authenticate
-from users.models.user import User
 
 from rest_framework.views import APIView
 from rest_framework.generics import CreateAPIView
-from rest_framework import permissions
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 
-class LoginView(APIView):
+from users.models.user import User
+from users.utils import utils
+from users.serializers.user import UserSerializer
+from users.mixins import PublicApiMixin
+
+class LoginView(PublicApiMixin, APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
         try:
-            user = User.objects.get(email=email)  
-            username = user.username  
-            user = authenticate(username=username, password=password)  
+            user = User.objects.get(email=email)
+            username = user.username
+            user = authenticate(username=username, password=password)
         except User.DoesNotExist:
             return Response(
-                {"error": "Invalid credentials"}, 
+                {"error": "Invalid credentials"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
-
         if user is not None:
-            refresh = RefreshToken.for_user(user)
+            access_token, refresh_token = utils.generate_tokens_for_user(user)
             return Response({
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
+                'user': UserSerializer(user).data,
+                'access_token': str(access_token),
+                'refresh_token': str(refresh_token)
             })
         else:
             return Response(
-                {"error": "Invalid credentials"}, 
+                {"error": "Invalid credentials"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-class RegisterView(CreateAPIView):
+class RegisterView(PublicApiMixin, CreateAPIView):
     model = User
-    permission_classes = [ permissions.AllowAny ]
     serializer_class = UserSerializer
-    
+

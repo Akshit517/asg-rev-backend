@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from users.models.user import User
-from users.models.role import Role
 from workspaces.models.category import (
     Category,
     CategoryRole,
@@ -9,7 +8,7 @@ from workspaces.models.category import (
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
-        fields = ['id', 'name', 'workspace']
+        fields = ['id', 'name','workspace']
 
 class CategoryRoleSerializer(serializers.ModelSerializer):
     role_level = serializers.SerializerMethodField()
@@ -25,3 +24,5 @@ class CategoryRoleSerializer(serializers.ModelSerializer):
         if value.role_level != 'category':
             raise serializers.ValidationError("The role must be category-level")
         return value
+
+        

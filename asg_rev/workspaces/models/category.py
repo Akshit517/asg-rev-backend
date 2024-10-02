@@ -1,4 +1,5 @@
 from django.db import models
+from users.models.user import User
 from workspaces.models.workspace import Workspace  
 
 class Category(models.Model):
@@ -14,10 +15,11 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-from users.models.user import User
-from users.models.role import Role
-
 class CategoryRole(models.Model):
+    ROLE_CHOICES = [
+        ('category_admin', 'Category_Admin'),
+        ('category_member', 'Category_Member')
+    ]
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -28,13 +30,15 @@ class CategoryRole(models.Model):
         on_delete=models.CASCADE,  
         related_name='category_role'  
     )
-    role = models.ForeignKey(
-        Role,
-        on_delete=models.CASCADE,
-        related_name='category_role'
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='category_member',
+        blank=False
     )
+    
     class Meta:
-        unique_together = ('user', 'category', 'role')  
+        unique_together = ('user', 'category')  
 
     def __str__(self):
         return f"{self.user} - {self.role} in {self.category}"

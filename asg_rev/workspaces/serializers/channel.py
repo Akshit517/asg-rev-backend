@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from users.models.user import User
-from users.models.role import Role
 from workspaces.models.channel import (
     Channel,
     ChannelRole,

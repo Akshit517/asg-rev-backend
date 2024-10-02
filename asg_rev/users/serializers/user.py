@@ -11,7 +11,10 @@ class UserSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             email=validated_data.get('email'),
             auth_type=validated_data.get('auth_type', 'email'),
-            profile_pic=validated_data.get('profile_pic', '')
+            profile_pic=validated_data.get(
+                'profile_pic', 
+                f'https://ui-avatars.com/api/?name={validated_data["username"]}'
+                )
         )
         return user
 

@@ -1,10 +1,13 @@
-from django.urls import path
-from workspaces.views import (
-    CreateWorkspaceView,
-    UserWorkspaceListView,
-)    
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from workspaces.views.workspace import (
+    WorkspaceViewSet,
+)
+
+router = DefaultRouter()
+router.register(r'workspace', WorkspaceViewSet, basename='workspace')
+
 
 urlpatterns = [
-    path('create/', CreateWorkspaceView.as_view(), name='create'),   
-    path('list/', UserWorkspaceListView.as_view(), name='list-workspace'), 
+    path('', include(router.urls)),
 ]

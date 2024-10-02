@@ -24,10 +24,12 @@ class Workspace(models.Model):
     def __str__(self):
         return self.name
 
-from users.models.user import User
-from users.models.role import Role
 
 class WorkspaceRole(models.Model):
+    ROLE_CHOICES = [
+        ('workspace_admin', 'Workspace_Admin'),
+        ('workspace_member', 'Workspace_Member')
+    ]
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -38,13 +40,15 @@ class WorkspaceRole(models.Model):
         on_delete=models.CASCADE,  
         related_name='workspace_role'  
     )
-    role = models.ForeignKey(
-        Role,
-        on_delete=models.CASCADE,
-        related_name='workspace_role'
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='workspace_member',
+        blank=False
     )
+    
     class Meta:
-        unique_together = ('user', 'workspace', 'role')  
+        unique_together = ('user', 'workspace')  
 
     def __str__(self):
         return f"{self.user} - {self.role} in {self.workspace}"

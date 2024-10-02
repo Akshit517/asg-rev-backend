@@ -24,5 +24,3 @@ class User(AbstractUser):
         choices=AUTH_CHOICES,
         default='email'
     )
-
-

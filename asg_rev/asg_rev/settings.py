@@ -25,8 +25,10 @@ DEFAULT_APPS = [
 ]
 
 CUSTOM_APPS = [
+    #installed apps
     'rest_framework',
     'rest_framework_simplejwt',
+    #local apps
     'users',
     'workspaces',
 ]
@@ -94,6 +96,21 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = 'users.User'
+
+BASE_FRONTEND_URL = env('BASE_FRONTEND_URL')
+
+GOOGLE_OAUTH2 = {
+    'CLIENT_ID': env('GOOGLE_OAUTH2_CLIENT_ID'),
+    'CLIENT_SECRET': env('GOOGLE_OAUTH2_CLIENT_SECRET'),
+    'REDIRECT_URI': env('REDIRECT_URI')
+}
+
+CHANNELI_OAUTH2 = {
+    'CLIENT_ID': env('CHANNELI_OAUTH2_CLIENT_ID'),
+    'CLIENT_SECRET': env('CHANNELI_OAUTH2_CLIENT_SECRET'),
+    'BASE_URL': env('CHANNELI_BASE_URL'),
+    'REDIRECT_URI': env('REDIRECT_URI')
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/

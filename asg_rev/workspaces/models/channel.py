@@ -1,6 +1,7 @@
 import uuid
 from django.db import models
 from workspaces.models.category import Category
+from users.models.user import User
 
 class Channel(models.Model):
     id = models.UUIDField(
@@ -16,12 +17,12 @@ class Channel(models.Model):
         on_delete=models.CASCADE,
         related_name='channel'
     )
-    #assignment = models.ForeignKey()
-
-from users.models.user import User
-from users.models.role import Role
 
 class ChannelRole(models.Model):
+    ROLE_CHOICES = [
+        ('reviewer', 'Reviewer'),
+        ('reviewee', 'Reviewee')
+    ]
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -32,13 +33,15 @@ class ChannelRole(models.Model):
         on_delete=models.CASCADE,  
         related_name='channel_role'  
     )
-    role = models.ForeignKey(
-        Role,
-        on_delete=models.CASCADE,
-        related_name='channel_role'
+    role = models.CharField(
+        max_length=20,
+        choices=ROLE_CHOICES,
+        default='reviewer',
+        blank=False
     )
+
     class Meta:
-        unique_together = ('user', 'channel', 'role')  
+        unique_together = ('user', 'channel')  
 
     def __str__(self):
         return f"{self.user} - {self.role} in {self.channel}"

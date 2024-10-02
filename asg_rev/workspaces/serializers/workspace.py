@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from users.models.user import User
-from users.models.role import Role
 from workspaces.models.workspace import (
     Workspace,
     WorkspaceRole,
@@ -17,7 +16,7 @@ class WorkspaceRoleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WorkspaceRole
-        fields = ('id', 'user', 'workspace', 'role', 'role_level')
+        fields = '__all__'
 
     def get_role_level(self, obj):
         return 'workspace'

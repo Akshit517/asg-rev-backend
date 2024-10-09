@@ -35,7 +35,7 @@ CUSTOM_APPS = [
 
 INSTALLED_APPS = DEFAULT_APPS + CUSTOM_APPS
 
-MIDDLEWARE = [
+DEFAULT_MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -44,6 +44,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+INSTALLED_MIDDLEWARE = [
+    'crum.CurrentRequestUserMiddleware',
+    ]
+MIDDLEWARE = DEFAULT_MIDDLEWARE + INSTALLED_MIDDLEWARE
 
 ROOT_URLCONF = 'asg_rev.urls'
 

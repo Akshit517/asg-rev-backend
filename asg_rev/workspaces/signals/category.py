@@ -1,9 +1,9 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-from workspaces.models.workspace import (
-    Workspace,
-    WorkspaceRole,
+from workspaces.models.category import (
+    Category,
+    CategoryRole,
 )
 from users.models.user import User
 
@@ -15,14 +15,14 @@ def get_current_user_or_none():
         return None
     return u
 
-@receiver(post_save, sender=Workspace)
-def create_roleworkspace(sender, created, instance, **kwargs):
+@receiver(post_save, sender=Category)
+def create_rolecategory(sender, created, instance, **kwargs):
     if created: 
         user = get_current_user_or_none()
         if user is not None:
-            role = 'workspace_admin'
-            WorkspaceRole.objects.create(
+            role = 'category_admin'
+            CategoryRole.objects.create(
                 user=user,
-                workspace=instance,
+                category=instance,
                 role=role
             )

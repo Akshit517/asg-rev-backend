@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission
 
+'''not implemented'''
+
 class IsCategoryAdmin(BasePermission):
     def has_object_permission(self, request, view, obj):
         if not request.user.is_authenticated:

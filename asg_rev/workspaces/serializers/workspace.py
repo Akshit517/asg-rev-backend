@@ -8,20 +8,10 @@ from workspaces.models.workspace import (
 class WorkspaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workspace
-        fields = ('id', 'name', 'icon')  
-        read_only_fields = ('owner',) 
+        fields = '__all__'
 
 class WorkspaceRoleSerializer(serializers.ModelSerializer):
-    role_level = serializers.SerializerMethodField()
-
     class Meta:
         model = WorkspaceRole
         fields = '__all__'
 
-    def get_role_level(self, obj):
-        return 'workspace'
-
-    def validate_role(self, value):
-        if value.role_level != 'workspace':
-            raise serializers.ValidationError("The role must be a workspace-level role.")
-        return value

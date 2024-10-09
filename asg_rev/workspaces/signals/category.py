@@ -5,20 +5,12 @@ from workspaces.models.category import (
     Category,
     CategoryRole,
 )
-from users.models.user import User
-
-from crum import get_current_user
-
-def get_current_user_or_none():
-    u = get_current_user()
-    if not isinstance(u, User):
-        return None
-    return u
+from workspaces import utils
 
 @receiver(post_save, sender=Category)
 def create_rolecategory(sender, created, instance, **kwargs):
     if created: 
-        user = get_current_user_or_none()
+        user = utils.get_current_user_or_none()
         if user is not None:
             role = 'category_admin'
             CategoryRole.objects.create(

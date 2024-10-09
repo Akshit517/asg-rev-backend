@@ -1,7 +1,10 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from workspaces.models.channel import Channel
-from workspaces.models import ChannelRole
+
+from workspaces.models import (
+    Channel,
+    ChannelRole,
+)
 
 @receiver(post_save, sender=Channel)
 def create_default_channel_roles(sender, instance, created, **kwargs):

@@ -2,10 +2,16 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
-from workspaces.models.category import Category
-from workspaces.models.channel import Channel
+
+from workspaces.models import (
+    Category,
+    Channel,
+)
 from workspaces.serializers import ChannelSerializer
-from workspaces.permissions import IsReviewer, IsReviewee
+from workspaces.permissions import (
+    IsReviewer, 
+    IsReviewee,
+)
 
 class ChannelViewSet(viewsets.ModelViewSet):
     serializer_class = ChannelSerializer

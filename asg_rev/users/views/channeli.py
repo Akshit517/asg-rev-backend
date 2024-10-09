@@ -8,8 +8,8 @@ from rest_framework.response import Response
 
 from users.utils import utils
 from users.mixins import PublicApiMixin
-from users.models.user import User
-from users.serializers.user import UserSerializer
+from users.models import User
+from users.serializers import UserSerializer
 
 class ChanneliLoginApi(PublicApiMixin, APIView):
     class InputSerializer(serializers.Serializer):

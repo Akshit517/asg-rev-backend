@@ -1,12 +1,8 @@
 from django.urls import path
-from users.views.email import (
+from users.views import (
     LoginView,
     RegisterView,
-)
-from users.views.google import (
     GoogleLoginApi,
-)
-from users.views.channeli import (
     ChanneliLoginApi,
 )
 

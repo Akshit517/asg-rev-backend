@@ -6,9 +6,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework import status
 
-from users.models.user import User
+from users.models import User
 from users.utils import utils
-from users.serializers.user import UserSerializer
+from users.serializers import UserSerializer
 from users.mixins import PublicApiMixin
 
 class LoginView(PublicApiMixin, APIView):

@@ -1,11 +1,40 @@
 import requests
+from urllib.parse import urlencode
 from django.conf import settings
+from django.shortcuts import redirect
 from django.core.exceptions import ValidationError
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 GOOGLE_ACCESS_TOKEN_OBTAIN_URL = 'https://oauth2.googleapis.com/token'
 GOOGLE_USER_INFO_URL = 'https://www.googleapis.com/oauth2/v3/userinfo'
+
+def authorize_oauth2(*, redirect_uri: str, o_provider: str):
+    if o_provider == "channeli":
+        client_id = settings.CHANNELI_OAUTH2['CLIENT_ID']
+        state = 'successful'
+        params = {
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "state": state
+        }
+        authorize_url = settings.CHANNELI_OAUTH2['BASE_URL'] + '/oauth/authorise/?' + urlencode(params)
+        
+    elif o_provider == "google":
+        client_id = settings.GOOGLE_OAUTH2['CLIENT_ID']
+        state = 'successful'
+        params = {
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "response_type": "code",
+            "scope": "email profile openid",
+            "state": state
+        }
+        authorize_url = 'https://accounts.google.com/o/oauth2/auth?' + urlencode(params)        
+    else:
+        raise ValueError("Unsupported OAuth provider")
+
+    return redirect(authorize_url)
 
 def generate_tokens_for_user(user):
     serializer = TokenObtainPairSerializer()
@@ -34,10 +63,8 @@ def get_access_token(*, code: str, redirect_uri: str, o_provider: str) -> str:
         'redirect_uri': redirect_uri,
         'grant_type': 'authorization_code'
     }
-    print(token_url)
 
     response = requests.post(token_url, data=data)
-    print(response)
 
     if not response.ok:
         raise ValidationError(f'Failed to obtain access token from {o_provider}.')
@@ -65,7 +92,6 @@ def get_user_info(*, access_token: str, o_provider: str):
             )  
     else:
         raise ValueError("Unsupported OAuth provider")
-
     
     if not response.ok:
         raise ValidationError(f'Failed to obtain user info from {o_provider}.')

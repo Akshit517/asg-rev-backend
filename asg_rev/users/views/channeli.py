@@ -27,11 +27,18 @@ class ChanneliLoginApi(PublicApiMixin, APIView):
 
         login_url = f'{settings.BASE_FRONTEND_URL}'
 
-        if error or not code:
+        if error:
             params = urlencode({'error': error})
             return redirect(f'{login_url}?{params}')
 
         redirect_uri = 'http://localhost:8000/callback/channeli/'
+        
+        if not code:
+            return utils.authorize_oauth2(
+                redirect_uri=redirect_uri,
+                o_provider='channeli'
+            )
+
         access_token = utils.get_access_token(
             code=code, 
             redirect_uri=redirect_uri,
@@ -51,7 +58,6 @@ class ChanneliLoginApi(PublicApiMixin, APIView):
             }
             return Response(response_data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
-            print(user_data)
             username = user_data['username']
             user = User.objects.create(
                 username=username,

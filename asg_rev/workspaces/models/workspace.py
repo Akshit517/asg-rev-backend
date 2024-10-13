@@ -13,6 +13,7 @@ class Workspace(models.Model):
     )
     icon = models.URLField(
         max_length=250,
+        default="https://api.dicebear.com/9.x/identicon/svg?seed=Wyatt"
     ) 
     owner = models.ForeignKey(
         User,  

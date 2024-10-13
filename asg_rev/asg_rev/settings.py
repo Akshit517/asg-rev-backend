@@ -31,6 +31,7 @@ CUSTOM_APPS = [
     #local apps
     'users',
     'workspaces',
+    'chats'
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + CUSTOM_APPS
@@ -150,4 +151,14 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True
+}
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "asgi_redis.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [env('REDIS_URL')],
+        },
+        "ROUTING": "assignment.routing.channel_routing",
+    },
 }

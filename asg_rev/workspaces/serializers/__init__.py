@@ -10,4 +10,16 @@ from workspaces.serializers.channel import (
     ChannelSerializer,
     ChannelRoleSerializer,
 )
+from workspaces.serializers.assignment import (
+    AssignmentSerializer,
+    TaskSerializer
+)
+from workspaces.serializers.submission import (
+    SubmissionRevieweeSerializer,
+    SubmissionReviewerSerializer
+)
+from workspaces.serializers.iteration import (
+    IterationSerializer,
+)
+
 

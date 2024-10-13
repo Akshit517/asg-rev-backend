@@ -10,5 +10,6 @@ from workspaces.permissions.category import (
 from workspaces.permissions.channel import (
     IsReviewer,
     IsReviewee,
+    IsChannelMember,
 )
 

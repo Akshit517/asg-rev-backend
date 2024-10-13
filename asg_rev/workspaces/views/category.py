@@ -44,7 +44,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         return Category.objects.filter(id__in=category_ids)
 
     def perform_create(self, serializer):
-        workspace_id = self.kwargs.get('workspace_id')
+        workspace_id = self.kwargs.get('workspace_pk')
         try:
             workspace = Workspace.objects.get(id=workspace_id)
         except Workspace.DoesNotExist:
@@ -56,7 +56,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         if self.action in ['create', 'update', 'partial_update', 'destroy','add_member']:
             permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrAdmin]
         else:
-            permission_classes = [IsAuthenticated, IsWorkspaceMember]
+            permission_classes = [IsAuthenticated, (IsWorkspaceMember | IsWorkspaceOwnerOrAdmin)]
         
         return [permission() for permission in permission_classes]
 
@@ -65,11 +65,11 @@ class CategoryViewSet(viewsets.ModelViewSet):
         try:
             category = self.get_object()
 
-            user_id = request.data.get('user_id')
+            user_email = request.data.get('user_email')
             role = request.data.get('role', 'category_member')
 
             try:
-                user = User.objects.get(id=user_id)
+                user = User.objects.get(email=user_email)
             except User.DoesNotExist:
                 return Response(
                     {'detail': 'User not found'},

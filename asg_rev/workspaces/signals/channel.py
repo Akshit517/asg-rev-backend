@@ -5,9 +5,10 @@ from workspaces.models import (
     Channel,
     ChannelRole,
 )
+from workspaces import utils 
 
 @receiver(post_save, sender=Channel)
-def create_default_channel_roles(sender, instance, created, **kwargs):
+def create_rolechannel(sender, instance, created, **kwargs):
     if created:      
-        workspace_owner = instance.category.workspace.owner  
-        ChannelRole.objects.create(user=workspace_owner, channel=instance, role='reviewer')
+        user = utils.get_current_user_or_none() 
+        ChannelRole.objects.create(user=user, channel=instance, role='reviewer')

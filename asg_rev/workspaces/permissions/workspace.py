@@ -2,46 +2,52 @@ from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import NotFound
 from workspaces.models import Workspace
 
-class IsWorkspaceOwnerOrAdmin(BasePermission):
-    def has_permission(self, request, view):
-        print("executing admin permission workspace")
+class WorkspacePermissionMixin:
+    def get_workspace(self, view):
         workspace_id = view.kwargs.get('workspace_pk', view.kwargs.get('pk'))
-        print(workspace_id)
-
-        if not request.user.is_authenticated or not workspace_id:
-            return False
-
-        return request.user.workspace_role.filter(
-            workspace_id=workspace_id,
-            user=request.user,
-            role='workspace_admin'
-        ).exists()
-
-class IsWorkspaceOwner(BasePermission):
-    def has_permission(self, request, view):
-        print("executing owner permission workspace")
-        workspace_id = view.kwargs.get('workspace_pk', view.kwargs.get('pk'))
-        print(workspace_id)
-
-        if not request.user.is_authenticated or not workspace_id:
-            return False
-
+        if not workspace_id:
+            return None
         try:
-            workspace = Workspace.objects.get(id=workspace_id)
+            return Workspace.objects.get(id=workspace_id)
         except Workspace.DoesNotExist:
             raise NotFound("Workspace not found")
 
-        return workspace.owner == request.user
+    def has_role_permission(self, request, view, role_pattern):
+        if not request.user.is_authenticated:
+            return False
 
-class IsWorkspaceMember(BasePermission):
-    def has_permission(self, request, view):
-        print("executing member permission workspace")
-        workspace_id = view.kwargs.get('workspace_pk', view.kwargs.get('pk'))
-        print(workspace_id)
-        if not request.user.is_authenticated or not workspace_id:
+        workspace = self.get_workspace(view)
+        if not workspace:
             return False
 
         return request.user.workspace_role.filter(
-            workspace=workspace_id,
-            user=request.user
+            user=request.user,
+            workspace=workspace, 
+            role__startswith=role_pattern
         ).exists()
+
+    def is_workspace_owner(self, request, view):
+        if not request.user.is_authenticated:
+            return False
+
+        workspace = self.get_workspace(view)
+        if not workspace:
+            return False
+
+        return (workspace.owner == request.user)
+
+
+class IsWorkspaceOwnerOrAdmin(WorkspacePermissionMixin, BasePermission):
+    def has_permission(self, request, view):
+        print("Executing admin permission workspace")
+        return self.has_role_permission(request, view, 'workspace_admin')
+
+class IsWorkspaceOwner(WorkspacePermissionMixin, BasePermission):
+    def has_permission(self, request, view):
+        print("Executing owner permission workspace")
+        return self.is_workspace_owner(request, view)
+
+class IsWorkspaceMember(WorkspacePermissionMixin, BasePermission):
+    def has_permission(self, request, view):
+        print("Executing member permission workspace")
+        return self.has_role_permission(request, view, 'workspace_')

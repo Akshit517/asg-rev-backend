@@ -37,7 +37,7 @@ class WorkspaceViewSet(viewsets.ModelViewSet):
         return Workspace.objects.filter(id__in = workspace_ids)
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save()
 
     def get_permissions(self):
         if self.action in ['list', 'create']:
@@ -52,14 +52,14 @@ class WorkspaceViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['POST'], permission_classes=[IsWorkspaceOwnerOrAdmin])
     def add_member(self, request, pk=None):
         workspace = self.get_object()  
-        user_id = request.data.get('user_id')
+        user_email = request.data.get('user_email')
         role = request.data.get('role','workspace_member')
 
-        if not user_id or not role:
+        if not user_email or not role:
             raise ValidationError({"detail": "Both 'user_id' and 'role' fields are required."})
         
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(email=user_email)
         except User.DoesNotExist:
             return Response(
                     {"detail": "User not found."}, 
@@ -76,3 +76,5 @@ class WorkspaceViewSet(viewsets.ModelViewSet):
         serializer = WorkspaceRoleSerializer(workspace_role)
         
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    #remove members

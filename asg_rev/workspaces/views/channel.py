@@ -1,5 +1,11 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+from users.models import User
+from workspaces import utils
 from workspaces.models import (
     Category,
     Channel, 
@@ -8,11 +14,13 @@ from workspaces.models import (
 )
 from workspaces.serializers import (
     ChannelSerializer, 
-    AssignmentSerializer
+    AssignmentSerializer,
+    ChannelRoleSerializer
 )
 from workspaces.permissions import (
     IsReviewer, 
     IsReviewee, 
+    IsCategoryMember,
     IsChannelMember,
     IsWorkspaceOwnerOrAdmin,
     IsWorkspaceMember,
@@ -30,15 +38,90 @@ class ChannelViewSet(viewsets.ModelViewSet):
             category_id=category_id
         )
 
-    def perform_create(self, serializer):
-        serializer.save()
-
     def get_permissions(self):
         if self.action in ['update', 'partial_update', 'destroy', 'create']:
             permission_classes = [IsWorkspaceOwnerOrAdmin | IsReviewer]
         elif self.action in ['list']:
-            permission_classes = [ (IsWorkspaceOwnerOrAdmin | IsWorkspaceMember) ]
+            permission_classes = [ IsWorkspaceOwnerOrAdmin | IsCategoryMember ]
         elif  self.action in ['retrieve']:
-            permission_classes = [(IsWorkspaceOwnerOrAdmin | IsWorkspaceMember) & IsChannelMember ]
+            permission_classes = [ IsWorkspaceOwnerOrAdmin | IsChannelMember ]
 
         return [permission() for permission in permission_classes]
+
+class ChannelMemberView(APIView):
+    def get_permissions(self):
+        if self.request.method in ['POST','DELETE']:
+            permission_classes = [IsWorkspaceOwnerOrAdmin | IsReviewer]
+        else:  
+            permission_classes = [IsWorkspaceOwnerOrAdmin | IsChannelMember]  
+        return [permission() for permission in permission_classes]
+
+    def get(self, request, workspace_pk, category_pk, channel_pk):
+        members = ChannelRole.objects.filter(channel_id=channel_pk)
+        serializer = ChannelRoleSerializer(members, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, workspace_pk, category_pk, channel_pk):
+        channel = get_object_or_404(Channel, pk=channel_pk)
+        
+        email = request.data.get('user_email')
+        role = request.data.get('role', 'reviewee')
+        
+        if not email:
+            return Response(
+                {"detail": "User email is required."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = get_object_or_404(User, email=email)
+        channel_role, created = ChannelRole.objects.update_or_create(
+            user=user, 
+            channel=channel,
+            defaults={'role': role}
+        )
+
+        serializer = ChannelRoleSerializer(channel_role)
+
+        return Response(
+            serializer.data, 
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        )
+
+    def delete(self, request, workspace_pk, category_pk, channel_pk):
+        email = request.data.get('user_email')
+        if not email:
+            return Response(
+                {"detail": "User email is required."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        elif request.user.email == email:
+            return Response(
+                {"detail": "You cannot remove yourself from the workspace."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        user = get_object_or_404(User, email=email)
+        member = get_object_or_404(ChannelRole, user=user, channel_id=channel_pk)
+        member.delete()
+
+        return Response(
+            {"detail": "Member has been removed from the channel."}, 
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+class ChannelMemberDetailView(APIView):
+    permission_classes = [IsChannelMember]
+
+    def get(self, request, workspace_pk, category_pk, channel_pk):
+        email = request.query_params.get('email')
+        if not email:
+            return Response(
+                {"detail": "Email query parameter is required."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = get_object_or_404(User, email=email)
+        member = get_object_or_404(ChannelRole, user=user, channel_id=channel_pk)
+        
+        serializer = ChannelRoleSerializer(member)
+        return Response(serializer.data)

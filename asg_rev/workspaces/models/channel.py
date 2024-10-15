@@ -43,5 +43,10 @@ class ChannelRole(models.Model):
     class Meta:
         unique_together = ('user', 'channel')  
 
+    def save(self, *args, **kwargs):
+        if self.role not in dict(self.ROLE_CHOICES).keys():
+            raise ValueError(f"Role must be one of: {', '.join(dict(self.ROLE_CHOICES).keys())}")
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.user} - {self.role} in {self.channel}"

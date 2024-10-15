@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from users.models.user import User
+from users.serializers import UserSerializer
 from workspaces.models.workspace import (
     Workspace,
     WorkspaceRole,
@@ -17,6 +18,7 @@ class WorkspaceSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class WorkspaceRoleSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
     class Meta:
         model = WorkspaceRole
         fields = '__all__'

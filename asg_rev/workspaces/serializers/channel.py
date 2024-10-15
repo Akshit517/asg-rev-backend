@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from users.models.user import User
+from users.serializers import UserSerializer
 from workspaces.models import (
     Workspace,
     Category,
@@ -61,6 +62,7 @@ class ChannelSerializer(serializers.ModelSerializer):
         return channel
 
 class ChannelRoleSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
     class Meta:
         model = ChannelRole
         fields = ('id', 'user', 'channel', 'role')

@@ -1,7 +1,14 @@
+from rest_framework import viewsets, status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.decorators import action
+from rest_framework.views import APIView
+
 from workspaces.models.workspace import Workspace
 from workspaces.models import (
     Category, 
     CategoryRole,
+    ChannelRole
 )
 from workspaces.permissions import (
     IsWorkspaceMember, 
@@ -11,26 +18,17 @@ from workspaces.serializers import (
     CategorySerializer,
     CategoryRoleSerializer,
 )
-from users.models import (
-    User,
-)
-
-from rest_framework import viewsets, status
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.decorators import action
+from workspaces import utils
 
 from django.shortcuts import get_object_or_404
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all() 
     serializer_class = CategorySerializer
-    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
         workspace_id = self.kwargs.get('workspace_pk')
-
         workspace = get_object_or_404(Workspace, id=workspace_id)
 
         if not CategoryRole.objects.filter(user=user, category__workspace=workspace).exists():
@@ -53,44 +51,119 @@ class CategoryViewSet(viewsets.ModelViewSet):
         serializer.save(workspace=workspace)
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy','add_member']:
-            permission_classes = [IsAuthenticated, IsWorkspaceOwnerOrAdmin]
+        if self.action in ['create', 'update', 'partial_update', 'destroy','add_or_update_member']:
+            permission_classes = [IsWorkspaceOwnerOrAdmin]
         else:
-            permission_classes = [IsAuthenticated, (IsWorkspaceMember | IsWorkspaceOwnerOrAdmin)]
+            permission_classes = [IsWorkspaceMember]
         
         return [permission() for permission in permission_classes]
 
-    @action(detail=True, methods=['POST'])
-    def add_member(self, request, pk=None, workspace_pk=None):
-        try:
-            category = self.get_object()
+class CategoryMemberView(APIView):
+    def get_permissions(self):
+        if self.request.method in ['POST','DELETE']:
+            permission_classes = [IsWorkspaceOwnerOrAdmin]
+        else:
+            permission_classes = [IsWorkspaceMember]
+        return [permission() for permission in permission_classes]
 
-            user_email = request.data.get('user_email')
-            role = request.data.get('role', 'category_member')
+    def get(self, request, workspace_pk, category_pk):
+        members = CategoryRole.objects.filter(category_id=category_pk)
+        serializer = CategoryRoleSerializer(members, many=True)
+        return Response(serializer.data)
 
-            try:
-                user = User.objects.get(email=user_email)
-            except User.DoesNotExist:
-                return Response(
-                    {'detail': 'User not found'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+    def post(self, request, workspace_pk, category_pk):
+        category = get_object_or_404(Category, pk=category_pk)
+        
+        user_email = request.data.get('user_email')
+        role = request.data.get('role', 'category_member')
 
-            category_role, created = CategoryRole.objects.get_or_create(
-                user=user,
-                category=category,
-                defaults={'role': role}
+        if not user_email:
+            return Response(
+                {"detail": "User email is required."},
+                status=status.HTTP_400_BAD_REQUEST
             )
 
-            if not created:
-                category_role.role = role
-                category_role.save()
-
-            serializer = CategoryRoleSerializer(category_role)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        except Category.DoesNotExist:
+        user, exists = utils.check_user_exists_and_workspace_member(
+            email=user_email,
+            workspace_id=workspace_pk
+            )
+        if not exists:
             return Response(
-                {'detail': 'Category not found'}, 
+                {"detail": "User does not exist or is not a workspace member."},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+        category_role, created = CategoryRole.objects.update_or_create(
+            user=user,
+            category=category,
+            defaults={'role': role}
+        )
+
+        serializer = CategoryRoleSerializer(category_role)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+        )
+
+    def delete(self, request, workspace_pk, category_pk):
+        email = request.data.get('user_email')
+        if not email:
+            return Response(
+                {"detail": "Email query parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        elif request.user.email == email:
+            return Response(
+                {"detail": "You cannot remove yourself from the workspace."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        user, exists = utils.check_user_exists_and_workspace_member(
+            email=email,
+            workspace_id=workspace_pk
+            )
+        if not exists:
+            return Response(
+                {"detail": "User does not exist or is not a workspace member."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        member = get_object_or_404(
+            CategoryRole, 
+            user=user, category_id=category_pk
+        )
+        member.delete()
+
+        ChannelRole.objects.filter(
+            user=user, 
+            channel__category_id=category_pk
+        ).delete()
+        
+        return Response(
+            {"detail": "Member has been removed from the category."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+class CategoryMemberDetailView(APIView):
+    permission_classes = [IsWorkspaceMember]
+
+    def get(self, request, workspace_pk, category_pk):
+        email = request.query_params.get('email')
+        if not email:
+            return Response(
+                {"detail": "Email query parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user, exists = utils.check_user_exists_and_workspace_member(
+            email=email,
+            workspace_id=workspace_pk
+            )
+        if not exists:
+            return Response(
+                {"detail": "User does not exist or is not a workspace member."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        member = get_object_or_404(CategoryRole, user=user, category_id=category_pk)
+
+        serializer = CategoryRoleSerializer(member)
+        return Response(serializer.data)

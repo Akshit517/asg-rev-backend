@@ -5,7 +5,7 @@ from workspaces.models import Channel
 
 class RolePermissionMixin:
     def get_channel(self, view):
-        channel_id = view.kwargs.get('channel_pk')
+        channel_id = view.kwargs.get('channel_pk',view.kwargs.get('pk'))
         if not channel_id:
             return None
         try: 
@@ -28,13 +28,15 @@ class RolePermissionMixin:
         ).exists()
 
     def is_channel_member(self, request, view):
+        channel_id = view.kwargs.get('channel_pk',view.kwargs.get('pk'))
+        channel = Channel.objects.filter(id=channel_id)
         if not request.user.is_authenticated:
             return False
 
         channel = self.get_channel(view)
         if not channel:
             return False
-
+        
         return request.user.channel_role.filter(
             user=request.user,
             channel=channel

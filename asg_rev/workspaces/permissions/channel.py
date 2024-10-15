@@ -29,6 +29,7 @@ class RolePermissionMixin:
 
     def is_channel_member(self, request, view):
         channel_id = view.kwargs.get('channel_pk',view.kwargs.get('pk'))
+        print("first with channel_id", channel_id)
         channel = Channel.objects.filter(id=channel_id)
         if not request.user.is_authenticated:
             return False
@@ -44,12 +45,15 @@ class RolePermissionMixin:
 
 class IsReviewer(RolePermissionMixin, BasePermission):
     def has_permission(self, request, view):
+        print("executing is reviewer permission", self.has_role_permission(request, view, 'reviewer'))
         return self.has_role_permission(request, view, 'reviewer')
 
 class IsReviewee(RolePermissionMixin, BasePermission):
     def has_permission(self, request, view):
+        print("executing is reviewees permission", self.has_role_permission(request, view, 'reviewee'))
         return self.has_role_permission(request, view, 'reviewee')
 
 class IsChannelMember(RolePermissionMixin, BasePermission):
     def has_permission(self, request, view):
+        print("executing is channel member permission",  self.has_role_permission(request, view, 'reviewee'))
         return self.is_channel_member(request, view)

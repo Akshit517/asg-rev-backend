@@ -57,8 +57,11 @@ class ChannelMemberView(APIView):
         return [permission() for permission in permission_classes]
 
     def get(self, request, workspace_pk, category_pk, channel_pk):
-        members = ChannelRole.objects.filter(channel_id=channel_pk)
-        serializer = ChannelRoleSerializer(members, many=True)
+        queryset = ChannelRole.objects.filter(channel_id=channel_pk)
+        email = request.query_params.get('email')
+        if email is not None:
+            queryset = queryset.filter(user__email=email)
+        serializer = ChannelRoleSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def post(self, request, workspace_pk, category_pk, channel_pk):
@@ -109,19 +112,3 @@ class ChannelMemberView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
-class ChannelMemberDetailView(APIView):
-    permission_classes = [IsChannelMember]
-
-    def get(self, request, workspace_pk, category_pk, channel_pk):
-        email = request.query_params.get('email')
-        if not email:
-            return Response(
-                {"detail": "Email query parameter is required."}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        user = get_object_or_404(User, email=email)
-        member = get_object_or_404(ChannelRole, user=user, channel_id=channel_pk)
-        
-        serializer = ChannelRoleSerializer(member)
-        return Response(serializer.data)

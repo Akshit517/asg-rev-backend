@@ -1,8 +1,8 @@
+from rest_framework import status, permissions, exceptions
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from rest_framework import status, permissions
 from django.shortcuts import get_object_or_404
 
 from users.models.user import User
@@ -56,10 +56,15 @@ class WorkspaceMemberView(APIView):
         return [permission() for permission in permission_classes]
 
     def get(self, request, workspace_pk):
-        members = WorkspaceRole.objects.filter(
+        queryset = WorkspaceRole.objects.filter(
             workspace_id=workspace_pk
-        )
-        serializer = WorkspaceRoleSerializer(members, many=True)
+        ).select_related('user')
+
+        email = request.query_params.get('email')
+        if email is not None:
+            queryset = queryset.filter(user__email=email)
+        
+        serializer = WorkspaceRoleSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def post(self, request, workspace_pk):
@@ -68,10 +73,7 @@ class WorkspaceMemberView(APIView):
         user_email = request.data.get('user_email')
         role = request.data.get('role', 'workspace_member')  
         if not user_email:
-            return Response(
-                {"detail": "User email is required."}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return exceptions.ValidationError("user email is required")
 
         user = get_object_or_404(User, email=user_email)
         workspace_role, created = WorkspaceRole.objects.update_or_create(
@@ -90,15 +92,9 @@ class WorkspaceMemberView(APIView):
     def delete(self, request, workspace_pk):
         email = request.data.get('user_email')
         if not email:
-            return Response(
-                {"detail": "User email is required."}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return exceptions.ValidationError("user email is required")
         elif request.user.email == email:
-            return Response(
-                {"detail": "You cannot remove yourself from the workspace."},
-                status=status.HTTP_403_FORBIDDEN
-            )
+            return exceptions.PermissionDenied("you can't remove yourself from workspace")
 
         user = get_object_or_404(User, email=email)
         workspace_role = get_object_or_404(WorkspaceRole, user=user, workspace_id=workspace_pk)
@@ -118,21 +114,4 @@ class WorkspaceMemberView(APIView):
             {"detail": "Member has been removed from the all workspace related components"}, 
             status=status.HTTP_204_NO_CONTENT
         )
-
-class WorkspaceMemberDetailView(APIView):
-    permission_classes = [IsWorkspaceMember]
-
-    def get(self, request, workspace_pk):
-        email = request.query_params.get('email')
-        if not email:
-            return Response(
-                {"detail": "Email query parameter is required."}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        user = get_object_or_404(User, email=email)
-        member = get_object_or_404(WorkspaceRole, user=user, workspace_id=workspace_pk)
         
-        serializer = WorkspaceRoleSerializer(member)
-        return Response(serializer.data)
-

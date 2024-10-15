@@ -3,7 +3,7 @@ from users.models import User
 from workspaces.models.assignment.submission import (
     Submission,
 )
-from workspaces.models.assignment.assignment import (
+from workspaces.models.assignment.submission import (
     Team,
 )
 
@@ -30,6 +30,7 @@ class Iteration(models.Model):
         on_delete=models.CASCADE,
         related_name='iteration_submissions'
     )
+    remarks = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

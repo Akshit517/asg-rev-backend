@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from workspaces.models import (
+from users.serializers import UserSerializer
+from workspaces.models.assignment.assignment import (
     Assignment,
     Task,
 )

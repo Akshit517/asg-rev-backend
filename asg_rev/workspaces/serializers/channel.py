@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework import exceptions 
 from users.models.user import User
 from users.serializers import UserSerializer
 from workspaces.models import (
@@ -39,7 +40,7 @@ class ChannelSerializer(serializers.ModelSerializer):
         try:
             category = Category.objects.get(id=category_id)
         except Category.DoesNotExist:
-            raise serializers.ValidationError("Category does not exist.")
+            raise serializers.ValidationError("category does not exist")
         data['category'] = category
         return data
 
@@ -60,6 +61,14 @@ class ChannelSerializer(serializers.ModelSerializer):
             for task_data in tasks_data:
                 Task.objects.create(assignment=assignment, **task_data)
         return channel
+
+    def delete(self):
+        channel = self.instance
+        try:
+            channel.assignment.delete()
+        except Assignment.DoesNotExist:
+            return serializers.ValidationError("assignment does not exist")
+        channel.delete()
 
 class ChannelRoleSerializer(serializers.ModelSerializer):
     user = UserSerializer()

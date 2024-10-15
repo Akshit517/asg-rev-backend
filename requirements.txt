@@ -1,6 +1,9 @@
 asgiref==3.8.1
+async-timeout==4.0.3
 certifi==2024.8.30
 cffi==1.17.1
+channels==4.1.0
+channels-redis==4.2.0
 charset-normalizer==3.3.2
 cryptography==43.0.1
 defusedxml==0.8.0rc2
@@ -10,13 +13,16 @@ django-environ==0.11.2
 django-rest-framework==0.1.0
 djangorestframework==3.15.2
 djangorestframework-simplejwt==5.3.1
+drf-nested-routers==0.94.1
 idna==3.10
 jwcrypto==1.5.6
+msgpack==1.1.0
 oauthlib==3.2.2
 psycopg2==2.9.9
 pycparser==2.22
 PyJWT==2.9.0
 python3-openid==3.2.0
+redis==5.1.1
 requests==2.32.3
 requests-oauthlib==2.0.0
 social-auth-app-django==5.4.2

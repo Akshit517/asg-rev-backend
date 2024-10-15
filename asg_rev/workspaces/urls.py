@@ -4,17 +4,14 @@ from rest_framework_nested import routers
 from workspaces.views.workspace import (
     WorkspaceViewSet,
     WorkspaceMemberView,
-    WorkspaceMemberDetailView,
 )
 from workspaces.views.category import (
     CategoryViewSet,
     CategoryMemberView,
-    CategoryMemberDetailView
 )
 from workspaces.views.channel import (
     ChannelViewSet,
     ChannelMemberView,
-    ChannelMemberDetailView
 )
 from workspaces.views.assignment import (
     AssignmentView
@@ -48,47 +45,32 @@ urlpatterns = [
         name='workspace-member'
     ),
     path(
-        f'{prefix_url}workspaces/<uuid:workspace_pk>/members/detail/', 
-        WorkspaceMemberDetailView.as_view(), 
-        name='workspace-member-detail'
-    ),
-    path(
         f'{prefix_url}workspaces/<uuid:workspace_pk>/categories/<int:category_pk>/members/', 
         CategoryMemberView.as_view(), 
-        name='category-member-list-create'
-    ),
-    path(
-        f'{prefix_url}workspaces/<uuid:workspace_pk>/categories/<int:category_pk>/members/detail/', 
-        CategoryMemberDetailView.as_view(), 
-        name='category-member-detail'
+        name='category-member'
     ),
     path(
         f'{prefix_url}workspaces/<uuid:workspace_pk>/categories/<int:category_pk>/channels/<uuid:channel_pk>/members/', 
         ChannelMemberView.as_view(), 
-        name='category-member-list-create'
+        name='channel-member'
     ),
     path(
-        f'{prefix_url}workspaces/<uuid:workspace_pk>/categories/<int:category_pk>/channels/<uuid:channel_pk>/members/detail/', 
-        ChannelMemberDetailView.as_view(), 
-        name='category-member-detail'
-    ),
-    path(
-        f'{prefix_url}workspaces/<uuid:workspace_pk>/<uuid:id>/assignment/',
+        f'{prefix_url}workspaces/<uuid:workspace_pk>/categories/<int:category_pk>/channels/<uuid:pk>/assignment/',
         AssignmentView.as_view(), 
         name="assignment"
     ),
     path(
-        f'{prefix_url}<uuid:workspace_pk>/<uuid:id>/submissions/reviewee/', 
+        f'{prefix_url}workspaces/<uuid:workspace_pk>/categories/<int:category_pk>/channels/<uuid:channel_pk>/submissions/reviewee/', 
         SubmissionRevieweeView.as_view(), 
         name='submission-reviewee'
     ),
     path(
-        f'{prefix_url}<uuid:workspace_pk>/<uuid:id>/submissions/reviewer/', 
+        f'{prefix_url}workspaces/<uuid:workspace_pk>/categories/<int:category_pk>/channels/<uuid:channel_pk>/submissions/reviewer/', 
         SubmissionReviewerView.as_view(), 
         name='submission-reviewer'
     ),
     path(
-        f'{prefix_url}<uuid:workspace_pk>/<uuid:id>/submissions/<int:user_id>/', 
+        f'{prefix_url}workspaces/<uuid:workspace_pk>/categories/<int:category_pk>/channels/<uuid:channel_pk>/submissions/<int:user_id>/', 
         SubmissionReviewerView.as_view(), 
         name='submission-reviewer-user'
     ),
@@ -96,5 +78,5 @@ urlpatterns = [
         f'{prefix_url}<int:submission_id>/iterations/create/', 
         IterationCreateView.as_view(), 
         name='iteration-create'
-    ),
+    )
 ]

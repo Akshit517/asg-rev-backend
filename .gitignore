@@ -1,4 +1,5 @@
 __pycache__
 venv
+media/
 .env
 example.txt

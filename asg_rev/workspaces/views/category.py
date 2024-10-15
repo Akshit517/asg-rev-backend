@@ -67,8 +67,11 @@ class CategoryMemberView(APIView):
         return [permission() for permission in permission_classes]
 
     def get(self, request, workspace_pk, category_pk):
-        members = CategoryRole.objects.filter(category_id=category_pk)
-        serializer = CategoryRoleSerializer(members, many=True)
+        queryset = CategoryRole.objects.filter(category_id=category_pk)
+        email = request.query_params.get('email')
+        if email is not None:
+            queryset = queryset.filter(user__email=email)
+        serializer = CategoryRoleSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def post(self, request, workspace_pk, category_pk):
@@ -142,28 +145,3 @@ class CategoryMemberView(APIView):
             {"detail": "Member has been removed from the category."},
             status=status.HTTP_204_NO_CONTENT
         )
-
-class CategoryMemberDetailView(APIView):
-    permission_classes = [IsWorkspaceMember]
-
-    def get(self, request, workspace_pk, category_pk):
-        email = request.query_params.get('email')
-        if not email:
-            return Response(
-                {"detail": "Email query parameter is required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        user, exists = utils.check_user_exists_and_workspace_member(
-            email=email,
-            workspace_id=workspace_pk
-            )
-        if not exists:
-            return Response(
-                {"detail": "User does not exist or is not a workspace member."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        member = get_object_or_404(CategoryRole, user=user, category_id=category_pk)
-
-        serializer = CategoryRoleSerializer(member)
-        return Response(serializer.data)

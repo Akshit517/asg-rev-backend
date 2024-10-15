@@ -13,11 +13,12 @@ from workspaces.models.channel import (
 from workspaces.models.assignment.assignment import (
     Assignment,
     Task,
-    Team,
 )
 from workspaces.models.assignment.iteration import (
     Iteration,
 )
 from workspaces.models.assignment.submission import (
     Submission,
+    Team,
+    EarnedPoint
 )

@@ -9,9 +9,7 @@ class Assignment(models.Model):
         related_name='assignment',
         primary_key=True
     )
-    description = models.CharField(
-        max_length=255
-    )
+    description = models.TextField()
     for_teams = models.BooleanField(
         default=False
     ) 
@@ -21,43 +19,16 @@ class Assignment(models.Model):
     total_points = models.IntegerField()
 
     def __str__(self):
-        return self.title.name
+        return f'{self.id.name} -> {self.id.id}' 
 
 class Task(models.Model):
     assignment = models.ForeignKey(
         Assignment, 
         on_delete=models.CASCADE, 
         related_name='tasks')
-    task = models.CharField(
-        max_length=255
-    )
+    task = models.TextField()
     due_date = models.DateTimeField()
 
     def __str__(self):
         return self.task_name
-
-class Team(models.Model):
-    team_name = models.CharField(
-        max_length=100
-    ) 
-    assignment = models.ForeignKey(
-        Assignment,
-        on_delete=models.CASCADE,
-        related_name='teams'
-    )
-    team_leader = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name='team_leader'
-    )
-    members = models.ManyToManyField(
-        User,
-        related_name='team_members'
-    )
-    points_earned = models.IntegerField(
-        default=0
-    )
-
-    def __str__(self):
-        return f"{self.team_name} (Leader: {self.team_leader.username})"
 

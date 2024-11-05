@@ -8,3 +8,9 @@ from users.views.channeli import (
 from users.views.google import (
     GoogleLoginApi,
 )
+from users.views.logout import (
+    LogoutView
+)
+from users.views.wrapper_views import (
+    WrappedTokenRefreshView
+)

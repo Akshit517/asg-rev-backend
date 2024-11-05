@@ -21,23 +21,16 @@ class ChanneliLoginApi(PublicApiMixin, APIView):
         input_serializer.is_valid(raise_exception=True)
 
         validated_data = input_serializer.validated_data
-        print(validated_data)
         code = validated_data.get('code')
         error = validated_data.get('error')
 
         login_url = f'{settings.BASE_FRONTEND_URL}'
 
-        if error:
+        if error or not code:
             params = urlencode({'error': error})
             return redirect(f'{login_url}?{params}')
 
-        redirect_uri = 'http://localhost:8000/callback/channeli/'
-        
-        if not code:
-            return utils.authorize_oauth2(
-                redirect_uri=redirect_uri,
-                o_provider='channeli'
-            )
+        redirect_uri = validated_data.get('redirect_uri')
 
         access_token = utils.get_access_token(
             code=code, 

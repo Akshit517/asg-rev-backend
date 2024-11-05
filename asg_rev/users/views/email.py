@@ -41,3 +41,17 @@ class RegisterView(PublicApiMixin, CreateAPIView):
     model = User
     serializer_class = UserSerializer
 
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        
+        if serializer.is_valid():
+            user = serializer.save()
+            access_token, refresh_token = utils.generate_tokens_for_user(user)
+            
+            return Response({
+                'user': UserSerializer(user).data,
+                'access_token': str(access_token),
+                'refresh_token': str(refresh_token)
+            })
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

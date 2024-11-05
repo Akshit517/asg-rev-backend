@@ -13,7 +13,8 @@ environ.Env.read_env(env_file=str(BASE_DIR / '.env'))
 
 DEBUG = env('DEBUG')
 SECRET_KEY = env('SECRET_KEY')
-ALLOWED_HOSTS = []
+MY_DOMAIN = env('MY_DOMAIN')
+ALLOWED_HOSTS = [ MY_DOMAIN ,'127.0.0.1']
 
 # Application definition
 DEFAULT_APPS = [
@@ -29,6 +30,7 @@ CUSTOM_APPS = [
     #installed apps
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     #local apps
     'users',
     'workspaces',
@@ -48,7 +50,8 @@ DEFAULT_MIDDLEWARE = [
 ]
 INSTALLED_MIDDLEWARE = [
     'crum.CurrentRequestUserMiddleware',
-    ]
+    'users.middleware.UserExistenceCheckMiddleware',
+]
 MIDDLEWARE = DEFAULT_MIDDLEWARE + INSTALLED_MIDDLEWARE
 
 ROOT_URLCONF = 'asg_rev.urls'

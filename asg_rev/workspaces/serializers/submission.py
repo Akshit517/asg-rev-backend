@@ -47,6 +47,13 @@ class TeamSerializer(serializers.ModelSerializer):
         model = Team
         fields = ['id','assignment,''team_name','team_leader','members']
 
+    def validate_assignment(self , value):
+        if not value.for_teams:
+            raise serializers.ValidationError(
+                "This assignment does not allow team submissions"
+            )
+        return value
+
 class EarnedPointSerializer(serializers.ModelSerializer):
     reviewee = UserSerializer(required=False)
     reviewee_team = TeamSerializer(required=False)

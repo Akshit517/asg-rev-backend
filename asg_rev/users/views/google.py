@@ -28,17 +28,13 @@ class GoogleLoginApi(PublicApiMixin, APIView):
 
         login_url = f'{settings.BASE_FRONTEND_URL}'
     
-        if error:
+        if error or not code:
             params = urlencode({'error': error})
             return redirect(f'{login_url}?{params}')
 
-        redirect_uri = f'{settings.BASE_FRONTEND_URL}/callback/google/'
-        if not code:
-            return utils.authorize_oauth2(
-                redirect_uri=redirect_uri,
-                o_provider='google'
-            )
-
+        state = validated_data.get('state')
+        redirect_uri = validated_data.get('redirect_uri')
+        
         access_token = utils.get_access_token(
             code=code, 
             redirect_uri=redirect_uri,
@@ -73,4 +69,4 @@ class GoogleLoginApi(PublicApiMixin, APIView):
                 'access_token': str(access_token),
                 'refresh_token': str(refresh_token)
             }
-            return Response(response_data, status=status.HTTP_200_OK)       
+            return Response(response_data, status=status.HTTP_200_OK)

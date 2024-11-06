@@ -32,7 +32,6 @@ class GoogleLoginApi(PublicApiMixin, APIView):
             params = urlencode({'error': error})
             return redirect(f'{login_url}?{params}')
 
-        state = validated_data.get('state')
         redirect_uri = validated_data.get('redirect_uri')
         
         access_token = utils.get_access_token(

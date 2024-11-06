@@ -9,6 +9,10 @@ class UserSerializer(serializers.ModelSerializer):
         data['profile_pic'] = data.get('profile_pic', f'https://ui-avatars.com/api/?name={data["username"]}')
         
         return data
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
         
     class Meta:
         model = User

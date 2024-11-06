@@ -14,7 +14,8 @@ environ.Env.read_env(env_file=str(BASE_DIR / '.env'))
 DEBUG = env('DEBUG')
 SECRET_KEY = env('SECRET_KEY')
 MY_DOMAIN = env('MY_DOMAIN')
-ALLOWED_HOSTS = [ MY_DOMAIN ,'127.0.0.1']
+
+ALLOWED_HOSTS = [MY_DOMAIN, 'localhost']
 
 # Application definition
 DEFAULT_APPS = [

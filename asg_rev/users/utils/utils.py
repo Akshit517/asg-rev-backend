@@ -23,7 +23,6 @@ def get_access_token(*, code: str, redirect_uri: str, o_provider: str) -> str:
         client_id = settings.CHANNELI_OAUTH2['CLIENT_ID']
         client_secret = settings.CHANNELI_OAUTH2['CLIENT_SECRET']
         token_url = settings.CHANNELI_OAUTH2['BASE_URL'] + '/open_auth/token/'
-        print(token_url)
     elif o_provider == "google":
         client_id = settings.GOOGLE_OAUTH2['CLIENT_ID']
         client_secret = settings.GOOGLE_OAUTH2['CLIENT_SECRET']

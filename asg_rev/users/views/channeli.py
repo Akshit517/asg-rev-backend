@@ -9,15 +9,15 @@ from rest_framework.response import Response
 from users.utils import utils
 from users.mixins import PublicApiMixin
 from users.models import User
-from users.serializers import UserSerializer
+from users.serializers import ( 
+    UserSerializer,
+    InputSerializer
+)
 
 class ChanneliLoginApi(PublicApiMixin, APIView):
-    class InputSerializer(serializers.Serializer):
-        code = serializers.CharField(required=False)
-        error = serializers.CharField(required=False)
 
     def get(self, request):
-        input_serializer = self.InputSerializer(data=request.GET)
+        input_serializer = InputSerializer(data=request.GET)
         input_serializer.is_valid(raise_exception=True)
 
         validated_data = input_serializer.validated_data

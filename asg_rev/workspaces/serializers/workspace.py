@@ -22,4 +22,3 @@ class WorkspaceRoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = WorkspaceRole
         fields = '__all__'
-

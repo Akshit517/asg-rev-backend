@@ -22,7 +22,7 @@ class AssignmentView(RetrieveUpdateAPIView):
         return Assignment.objects.filter(id=channel)
 
     def get_permissions(self):
-        if self.request.method in ['PUT', 'PATCH', 'DELETE']:
+        if self.request.method in ['PUT', 'PATCH']:
             permission_classes = [IsWorkspaceOwnerOrAdmin | (IsWorkspaceMember & IsReviewer)]
         else:
             permission_classes = [IsWorkspaceOwnerOrAdmin | (IsWorkspaceMember & IsChannelMember)]

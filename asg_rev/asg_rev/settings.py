@@ -15,10 +15,11 @@ DEBUG = env('DEBUG')
 SECRET_KEY = env('SECRET_KEY')
 MY_DOMAIN = env('MY_DOMAIN')
 
-ALLOWED_HOSTS = [MY_DOMAIN, 'localhost']
+ALLOWED_HOSTS = [MY_DOMAIN, 'localhost','127.0.0.1']
 
 # Application definition
 DEFAULT_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -29,6 +30,7 @@ DEFAULT_APPS = [
 
 CUSTOM_APPS = [
     #installed apps
+    'channels',
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
@@ -74,6 +76,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'asg_rev.wsgi.application'
+ASGI_APPLICATION = 'asg_rev.routing.application'
 
 # Database
 DATABASES = {
@@ -163,10 +166,9 @@ SIMPLE_JWT = {
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "asgi_redis.RedisChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
             "hosts": [env('REDIS_URL')],
         },
-        "ROUTING": "assignment.routing.channel_routing",
     },
 }

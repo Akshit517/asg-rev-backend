@@ -51,7 +51,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
         serializer.save(workspace=workspace)
 
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy','add_or_update_member']:
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
             permission_classes = [IsWorkspaceOwnerOrAdmin]
         else:
             permission_classes = [IsWorkspaceMember]

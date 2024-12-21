@@ -118,13 +118,6 @@ class GroupChatConsumer(AsyncJsonWebsocketConsumer):
         """Sends the chat message to the WebSocket."""
         await self.send(text_data=json.dumps(event['message']))
 
-    async def chat_file(self, event):
-        """Sends the file data to the WebSocket."""
-        await self.send(text_data=json.dumps({
-            "file_name": event["file_name"],
-            "file_data": event["file_data"],
-            "sender": event["sender"]
-        }))
 
     @sync_to_async
     def is_user_in_channel(self, user):

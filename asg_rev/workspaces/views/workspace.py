@@ -3,8 +3,17 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
 
+from django.shortcuts import get_object_or_404 , redirect
+from django.contrib.auth.tokens import default_token_generator
+from django.urls import reverse
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
+from django.utils.html import format_html
+
+import base64
+        
 from users.models.user import User
 from workspaces import utils
 from workspaces.models.workspace import (
@@ -76,17 +85,14 @@ class WorkspaceMemberView(APIView):
             return exceptions.ValidationError("user email is required")
 
         user = get_object_or_404(User, email=user_email)
-        workspace_role, created = WorkspaceRole.objects.update_or_create(
-            user=user, 
-            workspace=workspace,
-            defaults={'role': role}
-        )
 
-        serializer = WorkspaceRoleSerializer(workspace_role)
-
+        token = default_token_generator.make_token(user)
+        user_id = str(user.pk).encode('utf-8')
+        uid = urlsafe_base64_encode(user_id)
+        self.send_invitation_email(user, workspace, uid, token, role)
         return Response(
-            serializer.data, 
-            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK
+            {"detail": "Invitation has been sent to user"}, 
+            status=status.HTTP_200_OK
         )
 
     def delete(self, request, workspace_pk):
@@ -114,4 +120,59 @@ class WorkspaceMemberView(APIView):
             {"detail": "Member has been removed from the all workspace related components"}, 
             status=status.HTTP_204_NO_CONTENT
         )
+
+    def send_invitation_email(self, user, workspace, token, uid, role):
+        accept_url = reverse(
+            'accept_workspace_invite', 
+            kwargs={'uidb64': uid, 'token': token, 'workspace_pk': workspace.pk, 'role': role}, 
+        )
+        invite_url=f"http://{settings.MY_DOMAIN}{accept_url}"
+
+        subject = "Invitation to join the Workspace"
+        html_content = format_html(
+            """
+            <p>Hello {username},</p>
+            <p>You have been invited to join a workspace. Click the link below to accept the invitation:</p>
+            <p><a href="{invite_url}" style="color: blue; text-decoration: underline;">Accept Invitation</a></p>
+            <p>If you did not request this, please ignore this email.</p>
+            """,
+            username=user.username,
+            invite_url=invite_url,
+        )
+        email = EmailMultiAlternatives(subject, "", None, [user.email])
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+
+class AcceptWorkspaceInviteView(APIView):
+    def get(self, request, uidb64, token, workspace_pk, role):
+        try:
+            print("uidb64", uidb64)
+            uid = urlsafe_base64_decode(uidb64).decode('utf-8')
+            user = get_object_or_404(User, pk=uid)
+            
+            if not default_token_generator.check_token(user, token):
+                return Response(
+                    {"error": "Invalid or expired token"}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            workspace = get_object_or_404(Workspace, pk=workspace_pk)
+
+            if WorkspaceRole.objects.filter(user=user, workspace=workspace).exists():
+                return Response(
+                    {"message": "You are already a member of the workspace."}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            WorkspaceRole.objects.create(user=user, workspace=workspace, role=role)
+
+            return Response(
+                {"message": "You have successfully joined the workspace!"}, 
+                status=status.HTTP_200_OK
+            )
         
+        except Exception as e:
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )

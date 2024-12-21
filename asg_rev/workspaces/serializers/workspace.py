@@ -7,6 +7,7 @@ from workspaces.models.workspace import (
 )
 
 class WorkspaceSerializer(serializers.ModelSerializer):
+    owner = UserSerializer()
     class Meta:
         model = Workspace
         fields = ['id', 'name', 'icon', 'owner'] 

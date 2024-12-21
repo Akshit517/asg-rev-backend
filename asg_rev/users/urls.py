@@ -9,6 +9,7 @@ from users.views import (
     WrappedTokenRefreshView
 )
 from users.views.app_links import asset_links
+from users.views.upload_media import UploadMediaView
 
 urlpatterns = [
     path('login/', LoginView.as_view(), name='login'),   
@@ -18,5 +19,6 @@ urlpatterns = [
     path('logout/', LogoutView.as_view(), name='logout'),
     path('api/token/refresh/', WrappedTokenRefreshView.as_view(), name='token-refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token-verify'),
-    path('.well-known/assetlinks.json', asset_links)
+    path('.well-known/assetlinks.json', asset_links),
+    path('upload-media/', UploadMediaView.as_view(), name='upload_media'),
 ]

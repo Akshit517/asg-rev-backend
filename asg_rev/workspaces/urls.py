@@ -4,6 +4,7 @@ from rest_framework_nested import routers
 from workspaces.views.workspace import (
     WorkspaceViewSet,
     WorkspaceMemberView,
+    AcceptWorkspaceInviteView
 )
 from workspaces.views.category import (
     CategoryViewSet,
@@ -78,5 +79,8 @@ urlpatterns = [
         f'{prefix_url}<int:submission_id>/iterations/create/', 
         IterationCreateView.as_view(), 
         name='iteration-create'
-    )
+    ),
+    path('api/workspaces/<uuid:workspace_pk>/accept-invite/<str:uidb64>/<str:token>/<str:role>/',
+         AcceptWorkspaceInviteView.as_view(),
+         name='accept_workspace_invite'),
 ]

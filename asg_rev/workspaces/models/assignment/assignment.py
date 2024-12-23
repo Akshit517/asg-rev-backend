@@ -27,7 +27,7 @@ class Task(models.Model):
         on_delete=models.CASCADE, 
         related_name='tasks')
     task = models.TextField()
-    due_date = models.DateTimeField()
+    due_date = models.DateField()
 
     def __str__(self):
         return self.task_name

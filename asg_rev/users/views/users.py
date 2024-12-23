@@ -12,7 +12,7 @@ class UserView(ListAPIView, UpdateAPIView):
 
     def get(self, request):
         users = User.objects.all()
-        data = users.values('id', 'email', 'username','profile_pic') 
+        data = users.values('id', 'email', 'username','profile_pic','auth_type') 
         return Response({"users": list(data)}, status=status.HTTP_200_OK)
 
     def patch(self, request):

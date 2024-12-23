@@ -15,7 +15,7 @@ from workspaces.serializers.assignment import (
 )
 
 class ChannelSerializer(serializers.ModelSerializer):
-    assignment_data = AssignmentSerializer(write_only=True, required=False)
+    assignment_data = AssignmentSerializer(write_only=True, required=True)
     assignment = AssignmentSerializer(read_only=True)
 
     class Meta:

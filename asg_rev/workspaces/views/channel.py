@@ -77,6 +77,11 @@ class ChannelMemberView(APIView):
             )
 
         user = get_object_or_404(User, email=email)
+        if not user.workspace_role.filter(workspace_id=workspace_pk).exists():
+            return Response(
+                {"detail": "User is not a workspace member."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
         channel_role, created = ChannelRole.objects.update_or_create(
             user=user, 
             channel=channel,

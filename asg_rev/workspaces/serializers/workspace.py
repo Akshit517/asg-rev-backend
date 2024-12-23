@@ -7,7 +7,7 @@ from workspaces.models.workspace import (
 )
 
 class WorkspaceSerializer(serializers.ModelSerializer):
-    owner = UserSerializer()
+    owner = UserSerializer(read_only=True)
     class Meta:
         model = Workspace
         fields = ['id', 'name', 'icon', 'owner'] 
@@ -15,8 +15,11 @@ class WorkspaceSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         request = self.context.get('request')
-        validated_data['owner'] = request.user
-        return super().create(validated_data)
+        workspace = Workspace.objects.create(
+            owner=request.user,
+            **validated_data
+        )
+        return workspace
 
 class WorkspaceRoleSerializer(serializers.ModelSerializer):
     user = UserSerializer()

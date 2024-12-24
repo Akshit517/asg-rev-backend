@@ -50,7 +50,7 @@ class ChannelViewSet(viewsets.ModelViewSet):
 
 class ChannelMemberView(APIView):
     def get_permissions(self):
-        if self.request.method in ['POST','DELETE']:
+        if self.request.method in ['POST','DELETE','PUT']:
             permission_classes = [IsWorkspaceOwnerOrAdmin | IsReviewer]
         else:  
             permission_classes = [IsWorkspaceOwnerOrAdmin | IsChannelMember]  
@@ -117,3 +117,31 @@ class ChannelMemberView(APIView):
             status=status.HTTP_204_NO_CONTENT
         )
 
+    def put(self, request, workspace_pk, category_pk, channel_pk):
+        email = request.data.get('user_email')
+        new_role = request.data.get('role')
+
+        if not email:
+            return Response(
+                {"detail": "User email is required."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if not new_role:
+            return Response(
+                {"detail": "New role is required."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user = get_object_or_404(User, email=email)
+        channel_role = get_object_or_404(
+            ChannelRole, user=user, channel_id=channel_pk
+        )
+
+        channel_role.role = new_role
+        channel_role.save()
+
+        serializer = ChannelRoleSerializer(channel_role)
+        return Response(
+            serializer.data, 
+            status=status.HTTP_200_OK
+        )

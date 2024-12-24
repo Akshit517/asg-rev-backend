@@ -58,7 +58,7 @@ class WorkspaceViewSet(ModelViewSet):
 
 class WorkspaceMemberView(APIView):
     def get_permissions(self):
-        if self.request.method in ['POST','DELETE']:
+        if self.request.method in ['POST','DELETE','PUT']:
             permission_classes = [IsWorkspaceOwnerOrAdmin]
         else:  
             permission_classes = [IsWorkspaceMember]
@@ -89,11 +89,33 @@ class WorkspaceMemberView(APIView):
         token = default_token_generator.make_token(user)
         user_id = str(user.pk).encode('utf-8')
         uid = urlsafe_base64_encode(user_id)
-        self.send_invitation_email(user, workspace, uid, token, role)
+        self.send_invitation_email(user, workspace, token, uid, role)
         return Response(
             {"detail": "Invitation has been sent to user"}, 
             status=status.HTTP_200_OK
         )
+    
+    def put(self, request, workspace_pk):
+        user_email = request.data.get('user_email')
+        new_role = request.data.get('role')
+        if not user_email:
+            return exceptions.ValidationError("user email is required")
+        if not new_role:
+            return exceptions.ValidationError("new role is required")
+
+        user = get_object_or_404(User, email=user_email)
+        workspace_role = get_object_or_404(
+            WorkspaceRole, user=user, workspace_id=workspace_pk
+        )
+
+        workspace_role.role = new_role
+        workspace_role.save()
+
+        return Response(
+            {"detail": f"Member's role has been updated to {new_role}."},
+            status=status.HTTP_200_OK
+        )
+
 
     def delete(self, request, workspace_pk):
         email = request.data.get('user_email')
@@ -124,8 +146,14 @@ class WorkspaceMemberView(APIView):
     def send_invitation_email(self, user, workspace, token, uid, role):
         accept_url = reverse(
             'accept_workspace_invite', 
-            kwargs={'uidb64': uid, 'token': token, 'workspace_pk': workspace.pk, 'role': role}, 
+            kwargs={
+                'workspace_pk': workspace.pk, 
+                'token': token,         
+                'uidb64': uid,    
+                'role': role 
+            }, 
         )
+        print(accept_url)
         invite_url=f"http://{settings.MY_DOMAIN}{accept_url}"
 
         subject = "Invitation to join the Workspace"

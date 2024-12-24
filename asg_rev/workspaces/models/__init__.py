@@ -14,11 +14,13 @@ from workspaces.models.assignment.assignment import (
     Assignment,
     Task,
 )
+from workspaces.models.assignment.assignment_status import (
+    AssignmentStatus,
+)
 from workspaces.models.assignment.iteration import (
     Iteration,
 )
 from workspaces.models.assignment.submission import (
     Submission,
     Team,
-    EarnedPoint
 )

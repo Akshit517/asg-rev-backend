@@ -8,11 +8,6 @@ from workspaces.models.assignment.submission import (
 )
 
 class Iteration(models.Model):
-    STATUS_CHOICES = (
-        ('completed', 'Completed'),
-        ('ongoing', 'Ongoing'),
-        ('incomplete', 'Incomplete'),
-    )
     reviewee = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -38,11 +33,6 @@ class Iteration(models.Model):
     )
     remarks = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(
-        max_length=20, 
-        choices=STATUS_CHOICES, 
-        default='incomplete'
-    )
 
     def __str__(self):
         reviewer_usernames = ", ".join([reviewer.username for reviewer in self.reviewers.all()])

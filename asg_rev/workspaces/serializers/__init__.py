@@ -19,7 +19,8 @@ from workspaces.serializers.submission import (
     SubmissionReviewerSerializer
 )
 from workspaces.serializers.iteration import (
-    IterationSerializer,
+    IterationRevieweeSerializer,
+    IterationReviewerSerializer
 )
 
 

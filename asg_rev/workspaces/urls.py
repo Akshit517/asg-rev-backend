@@ -22,7 +22,8 @@ from workspaces.views.submission import (
     SubmissionReviewerView,
 )
 from workspaces.views.iteration import (
-    IterationCreateView
+    RevieweeIterationView,
+    ReviewerIterationView
 )
 
 router = DefaultRouter()
@@ -76,11 +77,16 @@ urlpatterns = [
         name='submission-reviewer-user'
     ),
     path(
-        f'{prefix_url}<int:submission_id>/iterations/create/', 
-        IterationCreateView.as_view(), 
-        name='iteration-create'
+        f'{prefix_url}workspaces/<uuid:workspace_pk>/categories/<int:category_pk>/channels/<uuid:channel_pk>/submissions/<int:submission_id>/reviewer-iterations/',
+        ReviewerIterationView.as_view(),
+        name='reviewer-iterations'
     ),
-    path('api/workspaces/<uuid:workspace_pk>/accept-invite/<str:uidb64>/<str:token>/<str:role>/',
+    path(
+        f'{prefix_url}workspaces/<uuid:workspace_pk>/categories/<int:category_pk>/channels/<uuid:channel_pk>/submissions/<int:submission_id>/reviewee-iterations/',
+        RevieweeIterationView.as_view(),
+        name='reviewee-iterations'
+    ),
+    path('api/workspaces/<uuid:workspace_pk>/accept-invite/<str:token>/<str:uidb64>/<str:role>/',
          AcceptWorkspaceInviteView.as_view(),
          name='accept_workspace_invite'),
 ]

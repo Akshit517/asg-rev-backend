@@ -60,7 +60,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 class CategoryMemberView(APIView):
     def get_permissions(self):
-        if self.request.method in ['POST','DELETE']:
+        if self.request.method in ['POST','DELETE','PUT']:
             permission_classes = [IsWorkspaceOwnerOrAdmin]
         else:
             permission_classes = [IsWorkspaceMember]
@@ -144,4 +144,44 @@ class CategoryMemberView(APIView):
         return Response(
             {"detail": "Member has been removed from the category."},
             status=status.HTTP_204_NO_CONTENT
+        )
+
+    def put(self, request, workspace_pk, category_pk):
+        user_email = request.data.get('user_email')
+        new_role = request.data.get('role')
+
+        if not user_email:
+            return Response(
+                {"detail": "User email is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if not new_role:
+            return Response(
+                {"detail": "New role is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user, exists = utils.check_user_exists_and_workspace_member(
+            email=user_email,
+            workspace_id=workspace_pk
+        )
+        if not exists:
+            return Response(
+                {"detail": "User does not exist or is not a workspace member."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        category_role = get_object_or_404(
+            CategoryRole, 
+            user=user, 
+            category_id=category_pk
+        )
+
+        category_role.role = new_role
+        category_role.save()
+
+        serializer = CategoryRoleSerializer(category_role)
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
         )

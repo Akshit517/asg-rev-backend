@@ -13,3 +13,11 @@ from workspaces.views.channel import (
 from workspaces.views.assignment import (
     AssignmentView,
 )
+from workspaces.views.submission import (
+    SubmissionRevieweeView,
+    SubmissionReviewerView,
+)
+from workspaces.views.iteration import (
+    RevieweeIterationView,
+    ReviewerIterationView
+)

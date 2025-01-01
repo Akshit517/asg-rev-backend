@@ -1,6 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
 import environ
+import os
 
 env = environ.Env(
     DEBUG=(bool, False)
@@ -12,10 +13,13 @@ environ.Env.read_env(env_file=str(BASE_DIR / '.env'))
 
 DEBUG = env('DEBUG')
 SECRET_KEY = env('SECRET_KEY')
-ALLOWED_HOSTS = []
+MY_DOMAIN = env('MY_DOMAIN')
+
+ALLOWED_HOSTS = [MY_DOMAIN, 'localhost','127.0.0.1']
 
 # Application definition
 DEFAULT_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -25,14 +29,20 @@ DEFAULT_APPS = [
 ]
 
 CUSTOM_APPS = [
+    #installed apps
+    'channels',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    #local apps
     'users',
+    'workspaces',
+    'chats'
 ]
 
 INSTALLED_APPS = DEFAULT_APPS + CUSTOM_APPS
 
-MIDDLEWARE = [
+DEFAULT_MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -41,6 +51,11 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+INSTALLED_MIDDLEWARE = [
+    'crum.CurrentRequestUserMiddleware',
+    'users.middleware.UserExistenceCheckMiddleware',
+]
+MIDDLEWARE = DEFAULT_MIDDLEWARE + INSTALLED_MIDDLEWARE
 
 ROOT_URLCONF = 'asg_rev.urls'
 
@@ -61,6 +76,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'asg_rev.wsgi.application'
+ASGI_APPLICATION = 'asg_rev.routing.application'
 
 # Database
 DATABASES = {
@@ -92,7 +108,25 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 AUTH_USER_MODEL = 'users.User'
+
+BASE_FRONTEND_URL = env('BASE_FRONTEND_URL')
+
+GOOGLE_OAUTH2 = {
+    'CLIENT_ID': env('GOOGLE_OAUTH2_CLIENT_ID'),
+    'CLIENT_SECRET': env('GOOGLE_OAUTH2_CLIENT_SECRET'),
+    'REDIRECT_URI': env('REDIRECT_URI')
+}
+
+CHANNELI_OAUTH2 = {
+    'CLIENT_ID': env('CHANNELI_OAUTH2_CLIENT_ID'),
+    'CLIENT_SECRET': env('CHANNELI_OAUTH2_CLIENT_SECRET'),
+    'BASE_URL': env('CHANNELI_BASE_URL'),
+    'REDIRECT_URI': env('REDIRECT_URI')
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -123,9 +157,26 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=8),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
     'SIGNING_KEY': SECRET_KEY,
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': False
 }
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [env('REDIS_URL')],
+        },
+    },
+}
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_PORT = 587
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = env('EMAIL_HOST_PASSWORD')
